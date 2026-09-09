@@ -1,222 +1,108 @@
 # Analy's Librería
 
-Frontend desarrollado con React y Vite para administrar productos, pedidos y ventas de una librería.
-
-## Información académica
-
-- **Maestrante:** Beto Roberto Ascarrunz Quispe
-- **Actividad:** Evaluación práctica, semana 2
-- **Tema:** Desarrollo de una aplicación web con backend y frontend conectada a una API REST
+Backend de la aplicación de gestión de productos, pedidos y ventas de una librería. Está construido con Laravel 12 y expone una API REST autenticada con Laravel Sanctum.
 
 ## Tecnologías
 
-- React 19
-- Vite 8
-- Laravel 12 como backend
-- SQLite como base de datos del backend
-- `fetch` para las peticiones HTTP
-
-## Requisitos
-
-- Node.js 20 o superior
-- npm
 - PHP 8.2 o superior
-- Composer
 - Laravel 12
-- Backend ejecutándose en `http://127.0.0.1:8000`
+- SQLite
+- Laravel Sanctum
 
-## Instalación del frontend
+## Requisitos previos
 
-Desde la carpeta del proyecto:
+Antes de comenzar, instala y verifica:
+
+- PHP 8.2 o superior con las extensiones requeridas por Laravel
+- Composer
+- Git, si clonas el repositorio
+
+Comprueba las versiones con:
 
 ```bash
-cd frontend-libreria
-npm install
+php -v
+composer --version
+npm --version
 ```
 
-Para iniciar el servidor de desarrollo:
+## Instalación
+
+### 1. Instalar dependencias
 
 ```bash
-npm run dev
-```
-
-La aplicación estará disponible normalmente en `http://localhost:5173`.
-
-Comandos adicionales:
-
-```bash
-npm run build    # Genera la versión de producción
-
-## Configuración del backend Laravel
-
-El frontend espera que el backend Laravel esté en `http://127.0.0.1:8000`.
-
-Desde la carpeta del backend:
-
-```bash
-cd backend-libreria
 composer install
+```
+
+### 2. Crear y configurar el entorno
+
+```bash
 cp .env.example .env
 php artisan key:generate
-php artisan migrate
-php artisan serve --host=127.0.0.1 --port=8000
 ```
 
-Si la base de datos SQLite todavía no existe, créala antes de ejecutar las migraciones:
+En Linux y macOS, crea la base de datos SQLite:
 
 ```bash
 touch database/database.sqlite
-php artisan migrate
 ```
 
-En el archivo `.env` del backend:
+En Windows PowerShell:
+
+```powershell
+New-Item database/database.sqlite -ItemType File
+```
+
+El archivo `.env.example` ya configura SQLite. Si necesitas indicar una ruta diferente, establece `DB_DATABASE` con una ruta absoluta:
 
 ```env
 DB_CONNECTION=sqlite
-DB_DATABASE=/ruta/absoluta/al/backend-libreria/database/database.sqlite
+DB_DATABASE=/ruta/absoluta/al/proyecto/database/database.sqlite
 ```
 
-## Configuración CORS
-
-El navegador debe permitir peticiones desde Vite. En Laravel, revisa `config/cors.php`:
-
-```php
-'paths' => ['api/*', 'sanctum/csrf-cookie'],
-'allowed_methods' => ['*'],
-'allowed_origins' => ['http://localhost:5173', 'http://127.0.0.1:5173'],
-'allowed_origins_patterns' => [],
-'allowed_headers' => ['*'],
-'supports_credentials' => false,
-```
-
-Después de cambiar la configuración:
+### 3. Ejecutar migraciones y datos de prueba
 
 ```bash
-php artisan config:clear
-php artisan cache:clear
+php artisan migrate --seed
 ```
 
-Si Vite usa otro puerto, reemplázalo en `allowed_origins`.
+El seeder crea las tablas, un usuario de prueba y registros iniciales de productos, pedidos y ventas. Para reiniciar completamente la base de datos durante el desarrollo:
 
-## Endpoints utilizados
-
-| Recurso | Endpoint |
-| --- | --- |
-| Productos | `http://127.0.0.1:8000/api/productos` |
-| Pedidos | `http://127.0.0.1:8000/api/pedidos` |
-| Ventas | `http://127.0.0.1:8000/api/ventas` |
-
-Operaciones disponibles para cada recurso:
-
-| Operación | Método | URL |
-| --- | --- | --- |
-| Listar | `GET` | `/api/{recurso}` |
-| Registrar | `POST` | `/api/{recurso}` |
-| Actualizar | `PUT` | `/api/{recurso}/{id}` |
-| Eliminar | `DELETE` | `/api/{recurso}/{id}` |
-
-## Datos enviados a la API
-
-### Pedidos
-
-```json
-{
-	"nombre_cliente": "María Fernández",
-	"fecha": "2026-08-28",
-	"producto_id": 1,
-	"cantidad": 3,
-	"prioridad": "Normal",
-	"estado": "Pendiente"
-}
+```bash
+php artisan migrate:fresh --seed
 ```
 
-### Ventas
+## Ejecución en desarrollo
 
-```json
-{
-	"nombre_cliente": "María Fernández",
-	"fecha": "2026-08-28",
-	"producto_id": 1,
-	"cantidad": 3,
-	"metodo_pago": "Efectivo",
-	"total": 185.00
-}
+Abre dos terminales desde la raíz del proyecto.
+
+Terminal 1, servidor Laravel:
+
+```bash
+php artisan serve --host=127.0.0.1 --port=8000
 ```
 
-### Productos
+La aplicación Laravel estará disponible en `http://127.0.0.1:8000` 
 
-```json
-{
-	"nombre": "Cuaderno espiral tamaño carta",
-	"categoria": "Cuadernos",
-	"precio": 45.00,
-	"stock": 32
-}
+## Usuario de prueba
+
+Después de ejecutar `php artisan migrate --seed`, puedes autenticarte con:
+
+```text
+Correo:     bascarrunz@prueba.com
+Contraseña: password
 ```
 
-`producto_id` debe corresponder a un producto existente en la base de datos.
+## API
+
+La API base es `http://127.0.0.1:8000/api`.
 
 ## Estructura principal
 
 ```text
-src/
-	api/
-		productos.js       # CRUD de productos
-		recursos.js        # CRUD de pedidos y ventas
-	components/
-		Layout.jsx         # Encabezado, navegación y pie compartidos
-		navigation.js      # Navegación interna
-	pages/               # Una implementación independiente por página
+app/Http/Controllers/Api/   # Controladores de autenticación y recursos
+app/Models/                 # Modelos Eloquent
+database/migrations/        # Estructura de la base de datos
+database/seeders/           # Datos iniciales y usuario de prueba
+routes/api.php              # Rutas de la API
+routes/web.php              # Ruta web principal
 ```
-
-Cada página tiene su propio código. Solamente se comparten el layout y los módulos de conexión API.
-
-## Problemas frecuentes
-
-### Error de CORS
-
-Verifica que Laravel esté en el puerto `8000`, que Vite esté en un origen permitido y ejecuta:
-
-```bash
-php artisan config:clear
-```
-
-### Error de validación
-
-El frontend muestra los mensajes enviados por Laravel en `response.errors` o `response.message`. Comprueba que los nombres de los campos coincidan con las reglas del controlador.
-
-### No se puede eliminar un producto
-
-Si un producto está relacionado con un pedido o una venta, SQLite puede devolver:
-
-```text
-FOREIGN KEY constraint failed
-```
-
-Esto significa que existen registros relacionados mediante `producto_id`. Se recomienda impedir el borrado y mostrar un mensaje indicando que el producto tiene registros asociados, o utilizar borrado lógico con `SoftDeletes`.
-
-### La API devuelve datos dentro de `data`
-
-El frontend acepta respuestas directas o respuestas Laravel Resource:
-
-```json
-[
-	{ "id": 1 }
-]
-```
-
-```json
-{
-	"data": [
-		{ "id": 1 }
-	]
-}
-```
-
-## Flujo de trabajo
-
-1. Iniciar el backend Laravel en el puerto `8000`.
-2. Iniciar el frontend con `npm run dev`.
-3. Abrir `http://localhost:5173`.
-4. Entrar al panel desde la opción de inicio de sesión.
-5. Probar los módulos de productos, pedidos y ventas.
